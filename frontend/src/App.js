@@ -6,6 +6,7 @@ import Input from "./components/Input/Input";
 import { Box } from "@mui/material";
 import { useApp } from "./contexts/AppContext";
 import { AccountAbstractionProvider } from "./store/accountAbstractionContext";
+import { fetchEndpoint, postQuestion } from "./api/backend";
 
 const dummy_messages = [
   // { text: "Some request to the system", who: "user"},
@@ -26,31 +27,37 @@ function App() {
   const [messages, setMessages] = useState(dummy_messages);
   const [suggestions, setSuggestions] = useState(initial_suggestions);
   const [disabled, setDisabled] = useState(false);
+  const [loading, setLoading] = useState(false);
   const { scrollToBottom } = useApp();
 
   const onNewMessage = async (message) => {
     setDisabled(true);
     setMessages((messages) => [...messages, message]);
     setSuggestions([]);
-    await makeRequest();
+    setLoading(true);
+    await makeRequest(message.text);
   };
 
   const updateSuggestions = () => {
     setDisabled(false);
   }
   
-  const makeRequest = async () => {
-    scrollToBottom();
-    await new Promise(res => setTimeout(res, 2500));
-    setMessages((messages) => [...messages, { text: "Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC, making it over 2000 years old. Richard McClintock, a Latin professor at Hampden-Sydney College in Virginia, looked up one of the more obscure Latin words, consectetur, from a Lorem Ipsum passage, and going through the cites of the system.", who: "system" }]);
-    setSuggestions(["suggestion 1", "suggestion 2", "suggestion 3"]);
+  const makeRequest = async (input) => {
+    setLoading(true);
+    console.log("Making request", input);
+    const response = await postQuestion(input);
+    console.log("Response", response);
+    // await new Promise(res => setTimeout(res, 2500));
+    setMessages((messages) => [...messages, { text: response.message, who: "system" }]);
+    setSuggestions([...response.template]);
+    setLoading(false);
   }
   
   return (
     <AccountAbstractionProvider>
       <Box sx={{height: "100%"}}>
         <AppBarApp />
-        <Chat messages={messages} onFinishedWriting={updateSuggestions} />
+        <Chat messages={messages} loading={loading} onFinishedWriting={updateSuggestions} />
         <Input onNewMessage={onNewMessage} disabled={disabled} suggestions={suggestions} makeRequest={makeRequest} />
       </Box>
     </AccountAbstractionProvider>

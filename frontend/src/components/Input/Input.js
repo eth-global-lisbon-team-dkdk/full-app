@@ -36,7 +36,7 @@ export default function Input({ onNewMessage, suggestions, disabled }) {
   }
 
   return (
-    <Box className={classes.inputContainer} style={{ height: suggestions.length ? "8.5rem" : "5.5rem" }}>
+    <Box className={classes.inputContainer} >
       <Container style={{ alignItems: "center", maxWidth: "70%"}}>
           {suggestions.length !== 0 && <SuggestionsContainer suggestions={suggestions} disabled={disabled} addUserInput={addUserInput}/>}
           <TextField

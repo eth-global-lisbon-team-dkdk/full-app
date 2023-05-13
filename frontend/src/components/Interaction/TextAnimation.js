@@ -11,10 +11,10 @@ const TextAnimation = (props) => {
 
     const interval = setInterval(() => {
       setVisibleText(prevVisibleText => {
-        if (index >= words.length) {
+        if (index > words.length) {
           clearInterval(interval);
           props.onFinishedWriting();
-          return prevVisibleText; // Ensure all words are displayed
+          return;
         }
 
         scrollToBottom();

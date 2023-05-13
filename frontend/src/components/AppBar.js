@@ -1,10 +1,11 @@
 import { makeStyles } from "@material-ui/styles";
 import GitHubIcon from '@mui/icons-material/GitHub';
 import { AppBar, Button, IconButton, Toolbar, Typography } from "@mui/material";
-// import { useTheme } from '@mui/material/styles';
+import { useTheme } from '@mui/material/styles';
 import React from "react";
 import { useApp } from "../contexts/AppContext";
 import { useAccountAbstraction } from "../store/accountAbstractionContext";
+import { APP_NAME } from "../utils/constants";
 
 const useStyles = makeStyles((theme) => ({
   appBar: {
@@ -30,10 +31,9 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export default function AppBarApp() {
-  // const theme = useTheme();
+  const theme = useTheme();
   const { currentAccount, setCurrentAccount } = useApp();
   const { loginWeb3Auth, isAuthenticated, ownerAddress } = useAccountAbstraction()
-
 
   const classes = useStyles();
 
@@ -42,13 +42,14 @@ export default function AppBarApp() {
   };
 
   return (
-    <AppBar className={classes.appBar} color="secondary" position="fixed">
+    <AppBar className={classes.appBar} position="fixed">
       <Toolbar className={classes.toolbar}>
         <Typography
           variant="h6"
           style={{ flexGrow: 1 }}
+          color={theme.palette.primary.main}
         >
-          <b>App Name</b>
+          <b>{APP_NAME}</b>
         </Typography>
         <IconButton href="https://github.com/" style={{"marginRight": "1rem"}} color="primary">
           <GitHubIcon />
@@ -60,7 +61,7 @@ export default function AppBarApp() {
           onClick={connectWallet}
           className={classes.connectButton}
           disabled={currentAccount !== null}
-          style={{ "background": !currentAccount && 'black', "color": !currentAccount && 'white'}}
+          style={{ "background": !currentAccount && 'linear-gradient(to right top, #7B1EA2, #695be5)'}}
         >
           Connect Wallet
         </Button> : <div className={classes.userInfo}>{ownerAddress.slice(0,5) + "..." + ownerAddress.slice(ownerAddress.length-3, ownerAddress.length)}</div>}

@@ -6,19 +6,30 @@ import { AppProvider } from './contexts/AppContext';
 
 let theme = createTheme({
   typography: {
-    fontFamily: ['Raleway', 'sans-serif'].join(','),
+    fontFamily: 'Open Sans, sans-serif',
+    fontSize: 15,
   },
   palette: {
     primary: {
-      main: "#7B1EA2",
+      light: "#7234D5",
+      main: "#9567E0",
     },
     secondary: {
-      main: "#FFFFFF",
+      main: "#D0BBF2",
     },
     background: {
-      default: "#fdf9ff"
+      default: "#F3EEFC"
     }
   },
+  components: {
+    MuiAppBar: {
+      styleOverrides: {
+        colorPrimary: {
+          backgroundColor: "#F3EEFC"
+        }
+      }
+    }
+  }
 });
 
 // good color #ddeded - kinda green

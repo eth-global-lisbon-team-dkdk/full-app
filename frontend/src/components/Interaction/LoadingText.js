@@ -1,5 +1,5 @@
 import { Typography } from "@mui/material";
-import CheckIcon from '@mui/icons-material/Check';
+import CircularProgress from '@mui/material/CircularProgress';
 
 export default function LoadingText(props) {
 
@@ -8,9 +8,9 @@ export default function LoadingText(props) {
   // buttons with suggestions only when user input is next
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', marginLeft: "2rem", marginBottom: "1rem" }}>
-      <CheckIcon style={{ marginRight: '8px', color: 'green' }} />
-      <Typography variant="body1">{props.text}</Typography>
+    <div style={{ display: 'flex', alignItems: 'center', marginLeft: "4rem", marginBottom: "1rem" }}>
+      <CircularProgress color="success" size={20} style={{ marginRight: '8px', color: 'green' }} />
+      <Typography variant="body1" color="GrayText" >{props.text}</Typography>
     </div>
   );
 }
