@@ -5,6 +5,7 @@ import "./index.css";
 import Input from "./components/Input/Input";
 import { Box } from "@mui/material";
 import { useApp } from "./contexts/AppContext";
+import { AccountAbstractionProvider } from "./store/accountAbstractionContext";
 
 const dummy_messages = [
   // { text: "Some request to the system", who: "user"},
@@ -46,11 +47,13 @@ function App() {
   }
   
   return (
-    <Box sx={{height: "100%"}}>
-      <AppBarApp />
-      <Chat messages={messages} onFinishedWriting={updateSuggestions} />
-      <Input onNewMessage={onNewMessage} disabled={disabled} suggestions={suggestions} makeRequest={makeRequest} />
-    </Box>
+    <AccountAbstractionProvider>
+      <Box sx={{height: "100%"}}>
+        <AppBarApp />
+        <Chat messages={messages} onFinishedWriting={updateSuggestions} />
+        <Input onNewMessage={onNewMessage} disabled={disabled} suggestions={suggestions} makeRequest={makeRequest} />
+      </Box>
+    </AccountAbstractionProvider>
   );
 }
 
