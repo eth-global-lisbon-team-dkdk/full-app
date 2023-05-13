@@ -1,7 +1,7 @@
 import { makeStyles } from "@material-ui/styles";
 import GitHubIcon from '@mui/icons-material/GitHub';
 import { AppBar, Button, IconButton, Toolbar, Typography } from "@mui/material";
-import { useTheme } from '@mui/material/styles';
+// import { useTheme } from '@mui/material/styles';
 import React from "react";
 import { useApp } from "../contexts/AppContext";
 import { useAccountAbstraction } from "../store/accountAbstractionContext";
@@ -30,7 +30,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export default function AppBarApp() {
-  const theme = useTheme();
+  // const theme = useTheme();
   const { currentAccount, setCurrentAccount } = useApp();
   const { loginWeb3Auth, isAuthenticated, ownerAddress } = useAccountAbstraction()
 
@@ -63,7 +63,7 @@ export default function AppBarApp() {
           style={{ "background": !currentAccount && 'black', "color": !currentAccount && 'white'}}
         >
           Connect Wallet
-        </Button> : <div className={classes.userInfo}>{ownerAddress}</div>}
+        </Button> : <div className={classes.userInfo}>{ownerAddress.slice(0,5) + "..." + ownerAddress.slice(ownerAddress.length-3, ownerAddress.length)}</div>}
       </Toolbar>
     </AppBar>
   );

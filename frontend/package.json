@@ -10,7 +10,6 @@
     "@mui/material": "^5.13.0",
     "@safe-global/account-abstraction-kit-poc": "^1.0.1",
     "@safe-global/auth-kit": "^1.0.0",
-    "@safe-global/onramp-kit": "^1.1.0",
     "@safe-global/relay-kit": "^1.0.0",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",

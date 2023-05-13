@@ -1,10 +1,9 @@
 import React, { useState } from "react";
-import { Button, Paper, Typography } from "@mui/material";
+import { Button, Container, Paper, Typography } from "@mui/material";
 import { makeStyles } from "@material-ui/styles";
 // import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 // import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import TextAnimation from "./TextAnimation";
-import { Container, display } from "@mui/system";
 
 const useStyles = makeStyles((theme) => ({
   circle: {
@@ -31,7 +30,7 @@ export default function Interaction(props) {
     <div style={{
       display: "flex"
     }}>
-      {props.who && <Container className={classes.circle} style={{ backgroundColor:"blue", margin:"0", padding:'0'}} />}
+      {props.who && <Container className={classes.circle} style={{ backgroundColor:"blue", margin:"0", padding:"0", maxWidth: "50px", maxHeight: "50px"}} />}
       <Paper
         style={{
           backgroundColor: props.who ? '#e0e0e0' : '#f5f5f5',

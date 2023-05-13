@@ -6,7 +6,6 @@ export function useApp() {
   return useContext(AppContext);
 }
 
-
 export function AppProvider({ children }) {
   const [currentAccount, setCurrentAccount] = useState(null);
   const messagesEndRef = useRef(null);

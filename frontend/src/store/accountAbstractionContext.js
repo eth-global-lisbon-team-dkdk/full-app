@@ -1,6 +1,5 @@
 import AccountAbstraction from '@safe-global/account-abstraction-kit-poc'
 import { SafeAuthKit, Web3AuthModalPack } from '@safe-global/auth-kit'
-import { SafeOnRampKit, StripePack } from '@safe-global/onramp-kit'
 import { GelatoRelayPack } from '@safe-global/relay-kit'
 import { ethers, utils } from 'ethers'
 import { createContext, useCallback, useContext, useEffect, useState } from 'react'
@@ -58,7 +57,7 @@ const AccountAbstractionProvider = ({ children }) => {
   const [authClient, setAuthClient] = useState()
 
   // onRampClient
-  const [onRampClient, setOnRampClient] = useState()
+  // const [onRampClient, setOnRampClient] = useState()
 
   // reset React state when you switch the chain
   useEffect(() => {
@@ -211,39 +210,6 @@ const AccountAbstractionProvider = ({ children }) => {
     }
   }
 
-  // onramp-kit implementation
-  const openStripeWidget = async () => {
-    const onRampClient = await SafeOnRampKit.init(
-      new StripePack({
-        stripePublicKey: process.env.REACT_APP_STRIPE_PUBLIC_KEY || '',
-        onRampBackendUrl: process.env.REACT_APP_STRIPE_BACKEND_BASE_URL || ''
-      })
-    )
-    const sessionData = await onRampClient?.open({
-      // sessionId: sessionId, optional parameter
-      element: '#stripe-root',
-      defaultOptions: {
-        transaction_details: {
-          wallet_address: safeSelected,
-          supported_destination_networks: ['ethereum', 'polygon'],
-          supported_destination_currencies: ['usdc'],
-          lock_wallet_address: true
-        },
-        customer_information: {
-          email: 'john@doe.com'
-        }
-      }
-    })
-
-    setOnRampClient(onRampClient)
-
-    console.log('Stripe sessionData: ', sessionData)
-  }
-
-  const closeStripeWidget = async () => {
-    onRampClient?.close()
-  }
-
   // we can pay Gelato tx relayer fees with native token & USDC
   // TODO: ADD native Safe Balance polling
   // TODO: ADD USDC Safe Balance polling
@@ -278,10 +244,7 @@ const AccountAbstractionProvider = ({ children }) => {
 
     isRelayerLoading,
     relayTransaction,
-    gelatoTaskId,
-
-    openStripeWidget,
-    closeStripeWidget
+    gelatoTaskId
   }
 
   return (
