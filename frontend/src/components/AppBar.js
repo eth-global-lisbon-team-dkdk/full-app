@@ -10,7 +10,7 @@ const useStyles = makeStyles((theme) => ({
     height: "4rem",
   },
   toolbar: {
-    margin: "0 9%"
+    margin: "0 17%"
   },
   disabled: {
     cursor: "alias",

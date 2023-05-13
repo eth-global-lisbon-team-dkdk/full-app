@@ -1,49 +1,38 @@
 
-import { Box, Grid, IconButton, Paper, TextField } from "@mui/material";
-import React from "react";
+import React, { useState } from "react";
+import { Box, Container, IconButton, InputAdornment, TextField } from "@mui/material";
 import { makeStyles } from "@material-ui/styles";
 import MicIcon from '@mui/icons-material/Mic';
-import SendIcon from '@mui/icons-material/Send';
-import { Container } from "@mui/system";
 
 const useStyles = makeStyles((theme) => ({
   inputContainer: {
     position: "fixed",
     bottom: 0,
     width: "100%",
-    height: "4.5rem",
-    backgroundColor: "white",
-    // boxShadow: "0px -1px 1px rgba(0, 0, 0, 0.25)",
+    height: "6rem",
+    // backgroundColor: "white",
   },
-  input: {
+  suggestions: {
+    // width: "100%",
+    // minHeight: "2rem",
+    // backgroundColor: "red",
   }
 }));
 
 export default function Input() {
   const classes = useStyles();
-  const [inputValue, setInputValue] = React.useState('');
+  const [inputValue, setInputValue] = useState('');
 
   const handleInputChange = (event) => {
     setInputValue(event.target.value);
   };
 
-  const handleSendClick = () => {
-    // Handle send button click event here
-    console.log('Send clicked');
-  };
-
-
   return (
     <Box className={classes.inputContainer}>
-        <Grid container style={{ alignItems: "center"}}>
-          <Grid item xs={1} className={classes.microIcon}>
-            <center>
-              <IconButton>
-                <MicIcon />
-              </IconButton>
-            </center>
-          </Grid>
-          <Grid item xs={10} className={classes.input}>
+      <Container container style={{ alignItems: "center", maxWidth: "65%",}}>
+          <Container className={classes.suggestions}>
+
+          </Container>
           <TextField
             fullWidth
             placeholder="Type here something"
@@ -51,17 +40,24 @@ export default function Input() {
             onChange={handleInputChange}
             margin="normal"
             variant="outlined"
-            InputProps={{ style: { borderRadius: '20px', margin: '0', padding: '0' } }}
+            className="reveal"
+            InputProps={{
+              style: {
+                backgroundColor: "white",
+                borderRadius: '20px',
+                margin: '0',
+                padding: '0',
+              },
+              startAdornment: (
+                <InputAdornment position="start" style={{ marginLeft: "1rem"}}>
+                  <IconButton>
+                    <MicIcon />
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
           />
-          </Grid>
-          <Grid item xs={1} className={classes.sendIcon}>
-            <center>
-            <IconButton>
-              <SendIcon />
-            </IconButton>
-            </center>
-          </Grid>
-        </Grid>
+      </Container>
     </Box>
   );
 }

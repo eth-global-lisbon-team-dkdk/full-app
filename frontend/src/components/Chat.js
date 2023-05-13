@@ -24,7 +24,7 @@ export default function Chat() {
   return (
     <Container className={classes.chatContainer}>
       {messages.map((message) => (
-        <Interaction message={message.text} side={message.who === "system" ? true : false}></Interaction>
+        <Interaction message={message.text} who={message.who === "system" ? true : false}></Interaction>
       ))}
     </Container>
   );
