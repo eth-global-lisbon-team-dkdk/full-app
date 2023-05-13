@@ -3,44 +3,51 @@ import React, { useState } from "react";
 import { Box, Container, IconButton, InputAdornment, TextField } from "@mui/material";
 import { makeStyles } from "@material-ui/styles";
 import MicIcon from '@mui/icons-material/Mic';
+import SuggestionsContainer from "./SuggestionsContainer";
 
 const useStyles = makeStyles((theme) => ({
   inputContainer: {
     position: "fixed",
     bottom: 0,
     width: "100%",
-    height: "6rem",
-    // backgroundColor: "white",
+    backgroundColor: "white",
   },
-  suggestions: {
-    // width: "100%",
-    // minHeight: "2rem",
-    // backgroundColor: "red",
-  }
 }));
 
-export default function Input() {
-  const classes = useStyles();
+export default function Input({ onNewMessage, suggestions, disabled }) {
   const [inputValue, setInputValue] = useState('');
+  const classes = useStyles();
 
   const handleInputChange = (event) => {
     setInputValue(event.target.value);
   };
 
-  return (
-    <Box className={classes.inputContainer}>
-      <Container container style={{ alignItems: "center", maxWidth: "65%",}}>
-          <Container className={classes.suggestions}>
+  const keyPressed = (event) => {
+    if (event.key === "Enter") {
+      console.log("Enter pressed");
+      addUserInput(inputValue);
+      setInputValue("");
+    }
+  }
 
-          </Container>
+  const addUserInput = (input) => {
+    console.log("NEW INPUT ", input);
+    onNewMessage({ text: input, who: "user" });
+  }
+
+  return (
+    <Box className={classes.inputContainer} style={{ height: suggestions.length ? "8.5rem" : "5.5rem" }}>
+      <Container style={{ alignItems: "center", maxWidth: "70%"}}>
+          {suggestions.length !== 0 && <SuggestionsContainer suggestions={suggestions} disabled={disabled} addUserInput={addUserInput}/>}
           <TextField
             fullWidth
+            disabled={disabled}
             placeholder="Type here something"
             value={inputValue}
             onChange={handleInputChange}
             margin="normal"
             variant="outlined"
-            className="reveal"
+            onKeyDown={keyPressed}
             InputProps={{
               style: {
                 backgroundColor: "white",
