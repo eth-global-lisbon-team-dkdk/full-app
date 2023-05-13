@@ -1,9 +1,10 @@
-import React from "react";
 import { makeStyles } from "@material-ui/styles";
-import { AppBar, Button, IconButton, Toolbar, Typography } from "@mui/material";
 import GitHubIcon from '@mui/icons-material/GitHub';
-import { useApp } from "../contexts/AppContext";
+import { AppBar, Button, IconButton, Toolbar, Typography } from "@mui/material";
 import { useTheme } from '@mui/material/styles';
+import React from "react";
+import { useApp } from "../contexts/AppContext";
+import { useAccountAbstraction } from "../store/accountAbstractionContext";
 
 const useStyles = makeStyles((theme) => ({
   appBar: {
@@ -23,15 +24,21 @@ const useStyles = makeStyles((theme) => ({
       color: "white"
     },
   },
+  userInfo: {
+    color: "black",
+  }
 }));
 
 export default function AppBarApp() {
   const theme = useTheme();
   const { currentAccount, setCurrentAccount } = useApp();
+  const { loginWeb3Auth, isAuthenticated, ownerAddress } = useAccountAbstraction()
+
 
   const classes = useStyles();
 
   const connectWallet = async () => {
+    loginWeb3Auth();
   };
 
   return (
@@ -46,7 +53,8 @@ export default function AppBarApp() {
         <IconButton href="https://github.com/" style={{"marginRight": "1rem"}} color="primary">
           <GitHubIcon />
         </IconButton>
-        <Button
+        {/* TODO: modify styling + how user info are displayed} */}
+        {!isAuthenticated ? <Button
           variant="contained"
           color="primary"
           onClick={connectWallet}
@@ -55,7 +63,7 @@ export default function AppBarApp() {
           style={{ "background": !currentAccount && 'black', "color": !currentAccount && 'white'}}
         >
           Connect Wallet
-        </Button>
+        </Button> : <div className={classes.userInfo}>{ownerAddress}</div>}
       </Toolbar>
     </AppBar>
   );
