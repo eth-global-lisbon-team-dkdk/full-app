@@ -1,6 +1,7 @@
 import { makeStyles } from "@material-ui/styles";
 import { AppBar, Button, Toolbar, Typography } from "@mui/material";
 import { useTheme } from '@mui/material/styles';
+import { ethers } from "ethers";
 import React from "react";
 import { useApp } from "../contexts/AppContext";
 import { ReactComponent as Logo } from '../images/Bot.svg';
@@ -76,7 +77,7 @@ export default function AppBarApp() {
         {isAuthenticated && !safeDeployed && <Button onClick={deploySafeHandler}>Deploy a safe</Button>}
         <br />
         {isAuthenticated && safeDeployed && <div className={classes.userInfo}><b>Safe address</b> {safeSelected.slice(0,5) + "..." + safeSelected.slice(safeSelected.length-3, safeSelected.length)}</div>}
-        {isAuthenticated && safeDeployed && <div className={classes.userInfo}><b>Safe balance</b> {safeBalance} ETH</div>}
+        {isAuthenticated && safeDeployed && safeBalance && <div className={classes.userInfo}><b>Safe balance</b> {ethers.utils.formatEther(ethers.BigNumber.from(safeBalance))} ETH</div>}
         {isAuthenticated && <Button onClick={logoutHandler}>Logout</Button>}
       </Toolbar>
     </AppBar>

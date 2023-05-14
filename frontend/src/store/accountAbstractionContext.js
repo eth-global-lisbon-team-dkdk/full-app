@@ -376,13 +376,9 @@ const AccountAbstractionProvider = ({ children }) => {
     console.log(safeTransaction);
     console.log(safeTxHash);
     
-    const executorNonce = await getNonce(protocolWallet.getAddress(), web3Provider);
+    const executorNonce = await getNonce(await protocolWallet.getAddress(), web3Provider);
     console.log(executorNonce);
-    const executeTxResponse = await safeSDK.executeTransaction(safeTransaction, {
-      maxFeePerGas,
-      maxPriorityFeePerGas,
-      nonce: executorNonce
-    });
+    const executeTxResponse = await safeSDK.executeTransaction(safeTransaction, {nonce: executorNonce});
     const receipt = await executeTxResponse.transactionResponse?.wait()
     
     console.log('Transaction executed:')
