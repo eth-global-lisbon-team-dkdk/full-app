@@ -4,7 +4,7 @@ import Chat from "./components/Chat";
 import "./index.css";
 import Input from "./components/Input/Input";
 import { Box } from "@mui/material";
-import { AccountAbstractionProvider } from "./store/accountAbstractionContext";
+import { AccountAbstractionProvider, useAccountAbstraction } from "./store/accountAbstractionContext";
 import { postQuestion } from "./api/backend";
 import LandingComponent from "./components/LandingPage/LandingComponent";
 
@@ -21,10 +21,13 @@ const initial_suggestions = [
 ];
 
 function App() {
+  const { createTransaction } = useAccountAbstraction();
+  const [transaction, setTransaction] = useState(null);
   const [scrolled, setScrolled] = useState(false);
   const [messages, setMessages] = useState(dummy_messages);
   const [suggestions, setSuggestions] = useState(initial_suggestions);
   const [disabled, setDisabled] = useState(false);
+  const { safeSelected } = useAccountAbstraction();
 
   useEffect(() => {
       window.addEventListener('scroll', handleScroll);
@@ -48,8 +51,15 @@ function App() {
     const response = await postQuestion(input);
     console.log("Response", response);
     await new Promise(res => setTimeout(res, 2500));
-    setMessages((messages) => [...messages, { text: response.message, who: "system", isAction: response.is_action, links: response.links, template: response.template }]);
-    setSuggestions([...response.template]);
+
+    if (response.is_action) {
+      setMessages((messages) => [...messages, { text: response.message, who: "system", isAction: response.is_action, amount_matic: response.amount_matic, symbol: response.symbol, address: response.address, links: []}]);
+      const tx = createTransaction(response.amount_matic, response.address, safeSelected);
+      setTransaction(tx);
+    } else {
+      setMessages((messages) => [...messages, { text: response.message, who: "system", isAction: response.is_action, links: response.links, template: response.template }]);
+      setSuggestions([...response.template]);
+    }
   }
   
   return (
@@ -57,7 +67,7 @@ function App() {
       <Box sx={{height: "100%"}}>
         <AppBarApp />
         <LandingComponent />
-        <Chat messages={messages} onFinishedWriting={updateSuggestions} />
+        <Chat transaction={transaction} messages={messages} onFinishedWriting={updateSuggestions} />
         <Input onNewMessage={onNewMessage} scrolled={scrolled} disabled={disabled} suggestions={suggestions} makeRequest={makeRequest} />
       </Box>
     </AccountAbstractionProvider>

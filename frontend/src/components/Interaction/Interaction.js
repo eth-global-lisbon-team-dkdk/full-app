@@ -57,8 +57,8 @@ export default function Interaction(props) {
             <>
               <Typography variant="body2" textAlign={props.left ? "left" : "right"} style={{ padding: "0 20px", fontWeight: "bold" }}>Please confirm the following transaction:</Typography>
               <ul>
-                <li style={{ "listStyle": "disc inside none" }}>You're attempting to swap ETH ➜ PEPE</li>
-                <li style={{ "listStyle": "disc inside none" }}>Spending amount: 0.100 ETH</li>
+                <li style={{ "listStyle": "disc inside none" }}>You're attempting to swap MATIC ➜ {props.message.symbol.toUpperCase()}</li>
+                <li style={{ "listStyle": "disc inside none" }}>Spending amount: {props.message.amount_matic} MATIC</li>
                 <li style={{ "listStyle": "disc inside none" }}>Contract: UniSwap V2 Router</li>
                 <li style={{ "listStyle": "disc inside none" }}>Chain: Polygon</li>
               </ul>
@@ -89,8 +89,8 @@ export default function Interaction(props) {
             </Container>
           }
           {
-            props.left && visibleLinks && props.message.isAction &&
-            <FullWidthButtons />
+            props.left && props.message.isAction &&
+            <FullWidthButtons transaction={props.transaction} />
           }
         </Paper>}
       </div>

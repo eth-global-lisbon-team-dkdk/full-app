@@ -11,14 +11,14 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-export default function Chat({ messages, onFinishedWriting }) {
+export default function Chat({ messages, onFinishedWriting, transaction }) {
   const classes = useStyles();
 
   return (
     <>
       <Container className={classes.chatContainer} style={{ maxWidth: "50%" }}>
         {messages.map((message, i) => (
-          <Interaction onFinishedWriting={onFinishedWriting} message={message} left={message.who === "system" ? true : false} key={i} last={i === messages.length-1} inSequence={i !== 0 && message.who === messages[i-1].who} default={i <= 2}/>
+          <Interaction transaction={transaction} onFinishedWriting={onFinishedWriting} message={message} left={message.who === "system" ? true : false} key={i} last={i === messages.length-1} inSequence={i !== 0 && message.who === messages[i-1].who} default={i <= 2}/>
         ))}
         {
           messages.length !== 0 && messages[messages.length-1].who === "user" &&
