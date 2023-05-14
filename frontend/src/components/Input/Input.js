@@ -58,13 +58,6 @@ export default function Input({ scrolled, onNewMessage, suggestions, disabled })
                   padding: '0',
                   elevation: '1',
                 },
-                // startAdornment: (
-                //   <InputAdornment position="start" style={{ marginLeft: "1rem"}}>
-                //     <IconButton>
-                //       <MicIcon />
-                //     </IconButton>
-                //   </InputAdornment>
-                // ),
               }}
             />
           </Box>

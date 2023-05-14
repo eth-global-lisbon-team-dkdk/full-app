@@ -1,5 +1,4 @@
 import { Typography } from "@mui/material";
-import safeLogo from '../../images/safe.png';
 
 export default function FeatureComponent({ title, emoji, description }) {
 

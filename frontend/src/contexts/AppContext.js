@@ -1,4 +1,4 @@
-import React, { useContext, useState, createContext, useEffect, useRef } from "react";
+import React, { useContext, useState, createContext, useRef } from "react";
 
 const AppContext = createContext();
 

@@ -5,7 +5,7 @@ import Interaction from "./Interaction/Interaction";
 import LoadingText from "./Interaction/LoadingText";
 import { APP_NAME } from "../utils/constants";
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(() => ({
   chatContainer: {
     margin: "5rem 0 14rem 0",
   },

@@ -4,7 +4,6 @@ import Chat from "./components/Chat";
 import "./index.css";
 import Input from "./components/Input/Input";
 import { Box } from "@mui/material";
-import { useApp } from "./contexts/AppContext";
 import { AccountAbstractionProvider } from "./store/accountAbstractionContext";
 import { postQuestion } from "./api/backend";
 import LandingComponent from "./components/LandingPage/LandingComponent";
