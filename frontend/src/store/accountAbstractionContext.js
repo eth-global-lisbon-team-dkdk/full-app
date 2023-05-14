@@ -12,6 +12,7 @@ import usePolling from '../hooks/usePolling'
 import { initialChain } from '../utils/chains'
 import getChain from '../utils/getChain'
 
+
 const initialState = {
   isAuthenticated: false,
   loginWeb3Auth: () => {},
@@ -330,28 +331,32 @@ const AccountAbstractionProvider = ({ children }) => {
     console.log(pendingTransactions);
 
     await safeService.confirmTransaction(safeTxHash, senderSignature.data);
+
+    return senderSignature.data;
   }
 
-  const executeTransaction = async (tx) => {
+  const executeTransaction = async (tx, senderSignature) => {
     const safeTxHash = ethers.utils._TypedDataEncoder.hash({ 
       chainId: chainId,
       verifyingContract: ethers.utils.getAddress(safeSelected), 
     }, EIP712_SAFE_TX_TYPE, tx.data)
     
-    const protocolWallet = new ethers.Wallet(process.env.REACT_APP_PROTOCOL_PRIVATE_KEY, web3Provider);
+    let provider = new ethers.providers.JsonRpcProvider("https://polygon-mainnet.g.alchemy.com/v2/0jacMpJERFNnF86aigYeoKbDSxcj3II7");
+
+    const signer = new ethers.Wallet(process.env.REACT_APP_PROTOCOL_PRIVATE_KEY, provider);
+
     const ethAdapter = new EthersAdapter({
       ethers,
-      signerOrProvider: protocolWallet
+      signerOrProvider: signer
     });
     
     const safeService = new SafeApiKit({ 
       txServiceUrl: getChain(chainId).transactionServiceUrl, 
-      ethAdapter: ethAdapter })
-    
+      ethAdapter: ethAdapter });
     const safeSDK = await Safe.create({
       ethAdapter,
       safeSelected
-    })
+    });
 
     let maxFeePerGas = ethers.BigNumber.from(40000000000) // fallback to 40 gwei
     let maxPriorityFeePerGas = ethers.BigNumber.from(40000000000) // fallback to 40 gwei
@@ -376,15 +381,69 @@ const AccountAbstractionProvider = ({ children }) => {
     console.log(safeTransaction);
     console.log(safeTxHash);
     
-    const executorNonce = await getNonce(await protocolWallet.getAddress(), web3Provider);
-    console.log(executorNonce);
-    const executeTxResponse = await safeSDK.executeTransaction(safeTransaction, {nonce: executorNonce});
-    const receipt = await executeTxResponse.transactionResponse?.wait()
-    
-    console.log('Transaction executed:')
-    console.log(`https://goerli.etherscan.io/tx/${receipt.transactionHash}`)
-  }
+    // const executorNonce = await getNonce(await protocolWallet.getAddress(), web3Provider);
+    // console.log(executorNonce);
+    // const executeTxResponse = await safeSDK.executeTransaction(safeTransaction, {
+    //   nonce: executorNonce,
+    //   maxFeePerGas,
+    //   maxPriorityFeePerGas,
+    //   gasPrice: maxFeePerGas.add(maxPriorityFeePerGas),
+    //   gasLimit: 1000000,
+    // });
+    // const receipt = await executeTxResponse.transactionResponse?.wait()
+    const safeAddress = "0x8c28d9e60e05bcdcf7a4d2fea259abb4bc4ee51f";
 
+    // Define the function signature for the 'execTransaction' function
+    let functionSignature = {
+      name: 'execTransaction',
+      type: 'function',
+      stateMutability: 'nonpayable',
+      inputs: [
+          {name: 'to', type: 'address'},
+          {name: 'value', type: 'uint256'},
+          {name: 'data', type: 'bytes'},
+          {name: 'operation', type: 'uint8'},
+          {name: 'safeTxGas', type: 'uint256'},
+          {name: 'baseGas', type: 'uint256'},
+          {name: 'gasPrice', type: 'uint256'},
+          {name: 'gasToken', type: 'address'},
+          {name: 'refundReceiver', type: 'address'},
+          {name: 'signatures', type: 'bytes'}
+      ]
+    };
+
+    // Create an ethers Interface with the function signature
+    let iface = new ethers.utils.Interface([functionSignature]);
+    console.log(await senderSignature);
+    // Define the arguments for the 'execTransaction' function
+    let args = [
+      safeTransaction.to,
+      safeTransaction.value,
+      safeTransaction.data,
+      safeTransaction.operation,
+      safeTransaction.safeTxGas,
+      safeTransaction.baseGas,
+      safeTransaction.gasPrice,
+      safeTransaction.gasToken,
+      safeTransaction.refundReceiver,
+      senderSignature
+    ];
+
+    // Encode the function call
+    let data = iface.encodeFunctionData(functionSignature.name, args);
+    console.log(data);
+    // Send the transaction
+    let transaction = {
+      to: safeAddress,
+      data: data,
+      maxPriorityFeePerGas,
+      maxFeePerGas
+    };
+
+    // Send the transaction
+    let txResponse = await signer.sendTransaction(transaction);
+    console.log('Transaction sent:', txResponse.hash);
+  }
 
   // fetch safe address balance with polling
   const fetchSafeBalance = useCallback(async () => {
@@ -464,7 +523,7 @@ async function getNonce(contractAddress, provider) {
     console.log("ADDY", contractAddress);
     let nonce = await provider.getTransactionCount(contractAddress);
     console.log(`The nonce for address ${contractAddress} is ${nonce}`);
-    return nonce;
+    return nonce+1;
   }
   return 0;
 }
