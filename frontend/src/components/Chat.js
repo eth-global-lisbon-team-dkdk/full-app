@@ -7,18 +7,18 @@ import { APP_NAME } from "../utils/constants";
 
 const useStyles = makeStyles((theme) => ({
   chatContainer: {
-    margin: "5rem 0 9rem 0",
+    margin: "5rem 0 14rem 0",
   },
 }));
 
-export default function Chat({ messages, onFinishedWriting, loading }) {
+export default function Chat({ messages, onFinishedWriting }) {
   const classes = useStyles();
 
   return (
     <>
-      <Container className={classes.chatContainer} style={{ maxWidth: "70%" }}>
+      <Container className={classes.chatContainer} style={{ maxWidth: "50%" }}>
         {messages.map((message, i) => (
-          <Interaction loading={loading} onFinishedWriting={onFinishedWriting} message={message.text} left={message.who === "system" ? true : false} key={i} last={i === messages.length-1} />
+          <Interaction onFinishedWriting={onFinishedWriting} message={message} left={message.who === "system" ? true : false} key={i} last={i === messages.length-1} inSequence={i !== 0 && message.who === messages[i-1].who} default={i <= 2}/>
         ))}
         {
           messages.length !== 0 && messages[messages.length-1].who === "user" &&

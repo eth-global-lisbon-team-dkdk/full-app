@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useApp } from '../../contexts/AppContext';
+import { Typography } from '@mui/material';
 
 const TextAnimation = (props) => {
   const [visibleText, setVisibleText] = useState('');
@@ -29,7 +30,7 @@ const TextAnimation = (props) => {
     };
   }, [props, scrollToBottom]);
 
-  return <div>{visibleText}</div>;
+  return <Typography variant="body2">{visibleText}</Typography>
 };
 
 export default TextAnimation;

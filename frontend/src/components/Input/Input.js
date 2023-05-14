@@ -1,16 +1,16 @@
 
 import React, { useState } from "react";
-import { Box, Container, IconButton, InputAdornment, TextField } from "@mui/material";
+import { Box, Container, TextField } from "@mui/material";
 import { makeStyles } from "@material-ui/styles";
-import MicIcon from '@mui/icons-material/Mic';
 import SuggestionsContainer from "./SuggestionsContainer";
+import Footer from "../Footer/Footer";
 
 const useStyles = makeStyles((theme) => ({
   inputContainer: {
     position: "fixed",
     bottom: 0,
     width: "100%",
-    backgroundColor: "white",
+    backgroundColor: "#F3EEFC",
   },
 }));
 
@@ -24,47 +24,50 @@ export default function Input({ onNewMessage, suggestions, disabled }) {
 
   const keyPressed = (event) => {
     if (event.key === "Enter") {
-      console.log("Enter pressed");
       addUserInput(inputValue);
       setInputValue("");
     }
   }
 
   const addUserInput = (input) => {
-    console.log("NEW INPUT ", input);
     onNewMessage({ text: input, who: "user" });
   }
 
   return (
     <Box className={classes.inputContainer} >
-      <Container style={{ alignItems: "center", maxWidth: "70%"}}>
+      <Container style={{ alignItems: "center", maxWidth: "45%"}}>
           {suggestions.length !== 0 && <SuggestionsContainer suggestions={suggestions} disabled={disabled} addUserInput={addUserInput}/>}
-          <TextField
-            fullWidth
-            disabled={disabled}
-            placeholder="Type here something"
-            value={inputValue}
-            onChange={handleInputChange}
-            margin="normal"
-            variant="outlined"
-            onKeyDown={keyPressed}
-            InputProps={{
-              style: {
-                backgroundColor: "white",
-                borderRadius: '20px',
-                margin: '0',
-                padding: '0',
-              },
-              startAdornment: (
-                <InputAdornment position="start" style={{ marginLeft: "1rem"}}>
-                  <IconButton>
-                    <MicIcon />
-                  </IconButton>
-                </InputAdornment>
-              ),
-            }}
-          />
+          <Box boxShadow={3} borderRadius={4} className={classes.textField} style={{ margin: suggestions.length !== 0 ? '0 0 1rem 0' : '1rem 0 1rem 0' }}>
+            <TextField
+              fullWidth
+              disabled={disabled}
+              placeholder="Ask me anything crypto, fren!"
+              value={inputValue}
+              onChange={handleInputChange}
+              margin="normal"
+              variant="outlined"
+              onKeyDown={keyPressed}
+              style={{ padding: '0', margin: '0' }}
+              InputProps={{
+                style: {
+                  backgroundColor: "white",
+                  borderRadius: '10px',
+                  margin: '0',
+                  padding: '0',
+                  elevation: '1',
+                },
+                // startAdornment: (
+                //   <InputAdornment position="start" style={{ marginLeft: "1rem"}}>
+                //     <IconButton>
+                //       <MicIcon />
+                //     </IconButton>
+                //   </InputAdornment>
+                // ),
+              }}
+            />
+          </Box>
       </Container>
+      <Footer />
     </Box>
   );
 }

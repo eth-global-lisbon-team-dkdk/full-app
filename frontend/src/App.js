@@ -6,35 +6,30 @@ import Input from "./components/Input/Input";
 import { Box } from "@mui/material";
 import { useApp } from "./contexts/AppContext";
 import { AccountAbstractionProvider } from "./store/accountAbstractionContext";
-import { fetchEndpoint, postQuestion } from "./api/backend";
+import { postQuestion } from "./api/backend";
 
 const dummy_messages = [
-  // { text: "Some request to the system", who: "user"},
-  // { text: "Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC, making it over 2000 years old. Richard McClintock, a Latin professor at Hampden-Sydney College in Virginia, looked up one of the more obscure Latin words, consectetur, from a Lorem Ipsum passage, and going through the cites of the word in classical literature, discovered the undoubtable source. Lorem Ipsum comes from sections 1.10.32 and 1.10.33 of de Finibus Bonorum et Malorum (The Extremes of Good and Evil) by Cicero, written in 45 BC. This book is a treatise on the theory of ethics, very popular during the Renaissance. The first line of Lorem Ipsum, Lorem ipsum dolor sit amet.., comes from a line in section 1.10.32.", who: "system"},
-  // { text: "Some request to the system", who: "user"},
-  // { text: "Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC, making it over 2000 years old. Richard McClintock, a Latin professor at Hampden-Sydney College in Virginia, looked up one of the more obscure Latin words, consectetur, from a Lorem Ipsum passage, and going through the cites of the word in classical literature, discovered the undoubtable source. Lorem Ipsum comes from sections 1.10.32 and 1.10.33 of de Finibus Bonorum et Malorum (The Extremes of Good and Evil) by Cicero, written in 45 BC. This book is a treatise on the theory of ethics, very popular during the Renaissance. The first line of Lorem Ipsum, Lorem ipsum dolor sit amet.., comes from a line in section 1.10.32.", who: "system"},
-  // { text: "Some request to the system", who: "user"},
-  // { text: "Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC, making it over 2000 years old. Richard McClintock, a Latin professor at Hampden-Sydney College in Virginia, looked up one of the more obscure Latin words, consectetur, from a Lorem Ipsum passage, and going through the cites of the word in classical literature, discovered the undoubtable source. Lorem Ipsum comes from sections 1.10.32 and 1.10.33 of de Finibus Bonorum et Malorum (The Extremes of Good and Evil) by Cicero, written in 45 BC. This book is a treatise on the theory of ethics, very popular during the Renaissance. The first line of Lorem Ipsum, Lorem ipsum dolor sit amet.., comes from a line in section 1.10.32.", who: "system"},
+  { who: "system", isAction: false, links: [], template: [], text: "👋 gm, this is CryptoWise" },
+  { who: "system", isAction: false, links: [], template: [], text: "I can help you learn about crypto and super-charge your investment research before you invest. What's more: I can even do swaps or execute transactions on your behalf." },
+  { who: "system", isAction: false, links: [], template: [], text: "What are you interested in?" },
 ];
 
 const initial_suggestions = [
-  'Learn about web3 and crypto',
-  'Investment a token or project',
-  'Trade or swap with zero fees',
+  'What is Web3?',
+  'What is Ethereum?',
+  'Is crypto safe?',
 ];
 
 function App() {
   const [messages, setMessages] = useState(dummy_messages);
   const [suggestions, setSuggestions] = useState(initial_suggestions);
   const [disabled, setDisabled] = useState(false);
-  const [loading, setLoading] = useState(false);
   const { scrollToBottom } = useApp();
 
   const onNewMessage = async (message) => {
     setDisabled(true);
     setMessages((messages) => [...messages, message]);
     setSuggestions([]);
-    setLoading(true);
     await makeRequest(message.text);
   };
 
@@ -43,21 +38,19 @@ function App() {
   }
   
   const makeRequest = async (input) => {
-    setLoading(true);
     console.log("Making request", input);
     const response = await postQuestion(input);
     console.log("Response", response);
-    // await new Promise(res => setTimeout(res, 2500));
-    setMessages((messages) => [...messages, { text: response.message, who: "system" }]);
+    await new Promise(res => setTimeout(res, 2500));
+    setMessages((messages) => [...messages, { text: response.message, who: "system", isAction: response.is_action, links: response.links, template: response.template }]);
     setSuggestions([...response.template]);
-    setLoading(false);
   }
   
   return (
     <AccountAbstractionProvider>
       <Box sx={{height: "100%"}}>
         <AppBarApp />
-        <Chat messages={messages} loading={loading} onFinishedWriting={updateSuggestions} />
+        <Chat messages={messages} onFinishedWriting={updateSuggestions} />
         <Input onNewMessage={onNewMessage} disabled={disabled} suggestions={suggestions} makeRequest={makeRequest} />
       </Box>
     </AccountAbstractionProvider>
