@@ -17,12 +17,12 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function FullWidthButtons({ transaction }) {
+export default function FullWidthButtons({ transaction, onNewMessage }) {
   const { signAndConfirmTransaction, executeTransaction } = useAccountAbstraction();
   const classes = useStyles();
 
   const onReject = async () => {
-    await postQuestion("I appreciate, but I reject your input.");
+    onNewMessage({ text: "I reject your suggestion.", who: "user", is_action: false, links: [], template: [] });
   }
 
   const onSuccess = async () => {

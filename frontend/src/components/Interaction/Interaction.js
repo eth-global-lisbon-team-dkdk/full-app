@@ -16,7 +16,7 @@ const useStyles = makeStyles((theme) => ({
 export default function Interaction(props) {
   const classes = useStyles();
   const [visibleLinks, setVisibleLinks] = useState(!props.last && props.message && props.message.links && props.message.links.length > 0 ? true : false);
-  const scrollToBottom = useApp();
+  const { scrollToBottom } = useApp();
 
   const showLinks = () => {
     if (props.message.links.length > 0) {
@@ -90,7 +90,7 @@ export default function Interaction(props) {
           }
           {
             props.left && props.message.isAction &&
-            <FullWidthButtons transaction={props.transaction} />
+            <FullWidthButtons onNewMessage={props.onNewMessage} transaction={props.transaction} />
           }
         </Paper>}
       </div>

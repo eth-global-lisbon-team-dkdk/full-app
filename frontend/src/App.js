@@ -50,12 +50,12 @@ function App() {
     console.log("Making request", input);
     const response = await postQuestion(input);
     console.log("Response", response);
-    await new Promise(res => setTimeout(res, 2500));
 
     if (response.is_action) {
       setMessages((messages) => [...messages, { text: response.message, who: "system", isAction: response.is_action, amount_matic: response.amount_matic, symbol: response.symbol, address: response.address, links: []}]);
       const tx = createTransaction(response.amount_matic, response.address, safeSelected);
       setTransaction(tx);
+      setDisabled(false);
     } else {
       setMessages((messages) => [...messages, { text: response.message, who: "system", isAction: response.is_action, links: response.links, template: response.template }]);
       setSuggestions([...response.template]);
@@ -67,7 +67,7 @@ function App() {
       <Box sx={{height: "100%"}}>
         <AppBarApp />
         <LandingComponent />
-        <Chat transaction={transaction} messages={messages} onFinishedWriting={updateSuggestions} />
+        <Chat onNewMessage={onNewMessage} transaction={transaction} messages={messages} onFinishedWriting={updateSuggestions} />
         <Input onNewMessage={onNewMessage} scrolled={scrolled} disabled={disabled} suggestions={suggestions} makeRequest={makeRequest} />
       </Box>
     </AccountAbstractionProvider>
