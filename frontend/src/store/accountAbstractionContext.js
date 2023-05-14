@@ -1,11 +1,14 @@
 import AccountAbstraction from '@safe-global/account-abstraction-kit-poc'
+import SafeApiKit from '@safe-global/api-kit'
 import { SafeAuthKit, Web3AuthModalPack } from '@safe-global/auth-kit'
+import Safe, { EthersAdapter, SafeFactory } from '@safe-global/protocol-kit'
 import { GelatoRelayPack } from '@safe-global/relay-kit'
-import { ethers, utils } from 'ethers'
-import { createContext, useCallback, useContext, useEffect, useState } from 'react'
-
 import { CHAIN_NAMESPACES, WALLET_ADAPTERS } from '@web3auth/base'
 import { OpenloginAdapter } from '@web3auth/openlogin-adapter'
+import axios from 'axios'
+import { ethers } from 'ethers'
+import { createContext, useCallback, useContext, useEffect, useState } from 'react'
+import SwapperAbi from '../abis/Swapper.json'
 import usePolling from '../hooks/usePolling'
 import { initialChain } from '../utils/chains'
 import getChain from '../utils/getChain'
@@ -14,16 +17,18 @@ const initialState = {
   isAuthenticated: false,
   loginWeb3Auth: () => {},
   logoutWeb3Auth: () => {},
-  relayTransaction: async () => {},
+  deploySafe: () => {},
   setChainId: () => {},
   setSafeSelected: () => {},
-  onRampWithStripe: async () => {},
+  setSafe: () => {},
   safes: [],
   chainId: initialChain.id,
-  isRelayerLoading: true,
-  openStripeWidget: async () => {},
-  closeStripeWidget: async () => {}
+  createTransaction: () => {},
+  signAndConfirmTransaction: () => {},
+  executeTransaction: () => {},
 }
+
+const SWAPPER_ADDRESS = '0x229D64bbd074722DD4e405F07cD8Cf29717D8F87';
 
 const accountAbstractionContext = createContext(initialState)
 
@@ -56,9 +61,6 @@ const AccountAbstractionProvider = ({ children }) => {
   // authClient
   const [authClient, setAuthClient] = useState()
 
-  // onRampClient
-  // const [onRampClient, setOnRampClient] = useState()
-
   // reset React state when you switch the chain
   useEffect(() => {
     setOwnerAddress('')
@@ -67,6 +69,7 @@ const AccountAbstractionProvider = ({ children }) => {
     setWeb3Provider(undefined)
     setSafeSelected('')
     setAuthClient(undefined)
+    setSafeDeployed(false)
   }, [chain])
 
   // auth-kit implementation
@@ -100,7 +103,7 @@ const AccountAbstractionProvider = ({ children }) => {
 
       const openloginAdapter = new OpenloginAdapter({
         loginSettings: {
-          mfaLevel: 'mandatory'
+          mfaLevel: 'none'
         },
         adapterSettings: {
           uxMode: 'popup',
@@ -112,18 +115,21 @@ const AccountAbstractionProvider = ({ children }) => {
 
       const web3AuthModalPack = new Web3AuthModalPack(options, [openloginAdapter], modalConfig)
 
-      const safeAuth = await SafeAuthKit.init(web3AuthModalPack)
+      const safeAuthKit = await SafeAuthKit.init(web3AuthModalPack, {
+        txServiceUrl: getChain(chainId).transactionServiceUrl
+      })
 
-      if (safeAuth) {
-        const { safes, eoa } = await safeAuth.signIn()
-        const provider = safeAuth.getProvider()
+      if (safeAuthKit) {
+        const { safes, eoa } = await safeAuthKit.signIn()
+        const provider = safeAuthKit.getProvider()
 
         // we set react state with the provided values: owner (eoa address), chain, safes owned & web3 provider
         setChainId(chain.id)
         setOwnerAddress(eoa)
         setSafes(safes || [])
         setWeb3Provider(new ethers.providers.Web3Provider(provider))
-        setAuthClient(safeAuth)
+        setAuthClient(safeAuthKit)
+        setSafeDeployed(safes.length > 0)
       }
     } catch (error) {
       console.log('error: ', error)
@@ -138,7 +144,7 @@ const AccountAbstractionProvider = ({ children }) => {
     setWeb3Provider(undefined)
     setSafeSelected('')
     setAuthClient(undefined)
-    setGelatoTaskId(undefined)
+    setSafeDeployed(false)
   }
 
   // TODO: add disconnect owner wallet logic ?
@@ -155,64 +161,230 @@ const AccountAbstractionProvider = ({ children }) => {
         const safeAccountAbstraction = new AccountAbstraction(signer)
 
         await safeAccountAbstraction.init({ relayPack })
-
         const hasSafes = safes.length > 0
 
-        const safeSelected = hasSafes ? safes[0] : await safeAccountAbstraction.getSafeAddress()
+        const safeSelected = hasSafes ? safes[0] : await safeAccountAbstraction.getSafeAddress();
 
         setSafeSelected(safeSelected)
+        setSafeDeployed(safes.length > 0)
       }
     }
 
     getSafeAddress()
   }, [safes, web3Provider])
 
-  const [isRelayerLoading, setIsRelayerLoading] = useState(false)
-  const [gelatoTaskId, setGelatoTaskId] = useState()
+  const [safeDeployed, setSafeDeployed] = useState(false)
 
-  // refresh the Gelato task id
-  useEffect(() => {
-    setIsRelayerLoading(false)
-    setGelatoTaskId(undefined)
-  }, [chainId])
+  const deploySafe = async () => {
+    console.log('deploying safe...')
+    const safeAccountConfig = {
+      owners: [ownerAddress],
+      threshold: 1,
+    }
 
-  // relay-kit implementation using Gelato
-  const relayTransaction = async () => {
-    if (web3Provider) {
-      setIsRelayerLoading(true)
-
-      const signer = web3Provider.getSigner()
-      const relayPack = new GelatoRelayPack()
-      const safeAccountAbstraction = new AccountAbstraction(signer)
-
-      await safeAccountAbstraction.init({ relayPack })
-
-      // we use a dump safe transfer as a demo transaction
-      const dumpSafeTransafer = [
-        {
-          to: safeSelected,
-          data: '0x',
-          value: utils.parseUnits('0.01', 'ether').toString(),
-          operation: 0 // OperationType.Call,
-        }
-      ]
-
-      const options = {
-        isSponsored: false,
-        gasLimit: '600000', // in this alfa version we need to manually set the gas limit
-        gasToken: ethers.constants.AddressZero // native token
+    const protocolWallet = new ethers.Wallet(process.env.REACT_APP_PROTOCOL_PRIVATE_KEY, web3Provider);
+    
+    const protocolAdapter = new EthersAdapter({
+      ethers,
+      signerOrProvider: protocolWallet
+    })
+    
+    const safeFactory = await SafeFactory.create({ ethAdapter: protocolAdapter });
+    let safeAddress = safeSelected;
+    if (!safeDeployed) {
+      let maxFeePerGas = ethers.BigNumber.from(40000000000) // fallback to 40 gwei
+      let maxPriorityFeePerGas = ethers.BigNumber.from(40000000000) // fallback to 40 gwei
+      try {
+          const { data } = await axios({
+              method: 'get',
+              url: 'https://gasstation-mainnet.matic.network/v2'
+          })
+          maxFeePerGas = ethers.utils.parseUnits(
+              Math.ceil(data.fast.maxFee) + '',
+              'gwei'
+          )
+          maxPriorityFeePerGas = ethers.utils.parseUnits(
+              Math.ceil(data.fast.maxPriorityFee) + '',
+              'gwei'
+          )
+      } catch {
+          // ignore
       }
 
-      const gelatoTaskId = await safeAccountAbstraction.relayTransaction(dumpSafeTransafer, options)
+      const safe = await safeFactory.deploySafe({
+        safeAccountConfig, 
+        options: {
+          maxFeePerGas,
+          maxPriorityFeePerGas} 
+      });
+        
+      safeAddress = await safe.getAddress();
 
-      setIsRelayerLoading(false)
-      setGelatoTaskId(gelatoTaskId)
+      console.log('Your Safe has been deployed:');
+      console.log(`https://polygonscan.com/address/${safeAddress}`);
+      console.log(`https://app.safe.global/matic:${safeAddress}`);
+      setSafeDeployed(true);
+
+      const tx = await protocolWallet.sendTransaction({
+        to: safeAddress,
+        value: 1,
+        maxPriorityFeePerGas,
+        maxFeePerGas,
+      });
+      await tx.wait();
+      console.log("Funded safe with 1 MATIC to", safeAddress);
+    } else {
+      console.log('Your Safe has already been deployed:');
+      console.log(`https://app.safe.global/matic:${safeAddress}`);
     }
   }
 
-  // we can pay Gelato tx relayer fees with native token & USDC
-  // TODO: ADD native Safe Balance polling
-  // TODO: ADD USDC Safe Balance polling
+  const createTransaction = async (amountInWei, tokenOut, receiver) => {
+    const iface = new ethers.utils.Interface(SwapperAbi);
+
+    const encodedData = iface.encodeFunctionData("swapETHForTokens", [tokenOut, receiver]);
+
+    // Generate data hash
+    const dataHash = ethers.utils.keccak256(encodedData);
+
+    // const safeTransactionData = buildSafeTransaction({
+    //   to: ethers.utils.getAddress(SWAPPER_ADDRESS),
+    //   data: dataHash,
+    //   value: amountInWei,
+    // });
+    
+    const safeTransactionData = buildSafeTransaction({
+      to: ethers.utils.getAddress(SWAPPER_ADDRESS),
+      data: dataHash,
+      value: amountInWei,
+    });
+
+    const signer = web3Provider.getSigner();
+    const ethAdapter = new EthersAdapter({
+      ethers,
+      signerOrProvider: signer || web3Provider
+    });
+    const safeSDK = await Safe.create({
+      ethAdapter,
+      safeSelected,
+      chainId: chainId
+    })
+    
+    let maxFeePerGas = ethers.BigNumber.from(40000000000) // fallback to 40 gwei
+    let maxPriorityFeePerGas = ethers.BigNumber.from(40000000000) // fallback to 40 gwei
+    try {
+        const { data } = await axios({
+            method: 'get',
+            url: 'https://gasstation-mainnet.matic.network/v2'
+        })
+        maxFeePerGas = ethers.utils.parseUnits(
+            Math.ceil(data.fast.maxFee) + '',
+            'gwei'
+        )
+        maxPriorityFeePerGas = ethers.utils.parseUnits(
+            Math.ceil(data.fast.maxPriorityFee) + '',
+            'gwei'
+        )
+    } catch {
+        // ignore
+    }
+    // Create a Safe transaction with the provided parameters
+    const safeTransaction = await safeSDK.createTransaction({safeTransactionData, options: {
+      maxFeePerGas,
+      maxPriorityFeePerGas
+    }})
+
+    return safeTransaction;
+  }
+
+  const signAndConfirmTransaction = async (safeTransaction) => {    
+    // Sign transaction to verify that the transaction is coming from owner 1
+    const signer = web3Provider.getSigner();
+    const ethAdapter = new EthersAdapter({
+      ethers,
+      signerOrProvider: signer || web3Provider
+    });
+
+    const safeSDK = await Safe.create({
+      ethAdapter,
+      safeSelected
+    })
+
+    const txServiceUrl = getChain(chainId).transactionServiceUrl
+    const safeService = new SafeApiKit({ txServiceUrl, ethAdapter: ethAdapter })
+
+    const safeTxHash = ethers.utils._TypedDataEncoder.hash({ 
+      chainId: chainId,
+      verifyingContract: ethers.utils.getAddress(safeSelected), 
+    }, EIP712_SAFE_TX_TYPE, safeTransaction.data)
+    const senderSignature = await safeSDK.signTransactionHash(safeTxHash);
+    console.log('sender signature: ', senderSignature.data);
+    
+    await safeService.proposeTransaction({
+      safeAddress: safeSelected,
+      safeTransactionData: safeTransaction.data,
+      safeTxHash,
+      senderAddress: await signer.getAddress(),
+      senderSignature: senderSignature.data,
+    })
+
+    const pendingTransactions = await safeService.getPendingTransactions(safeSelected)
+    console.log(pendingTransactions)
+
+    await safeService.confirmTransaction(safeTxHash, senderSignature.data);
+  }
+
+  const executeTransaction = async (tx) => {
+    const safeTxHash = ethers.utils._TypedDataEncoder.hash({ 
+      chainId: 137,
+      verifyingContract: ethers.utils.getAddress(safeSelected), 
+    }, EIP712_SAFE_TX_TYPE, tx.data)
+    
+    const protocolWallet = new ethers.Wallet(process.env.REACT_APP_PROTOCOL_PRIVATE_KEY, web3Provider);
+    const ethAdapter = new EthersAdapter({
+      ethers,
+      signerOrProvider: protocolWallet
+    });
+    
+    const safeService = new SafeApiKit({ 
+      txServiceUrl: getChain(chainId).transactionServiceUrl, 
+      ethAdapter: ethAdapter })
+    
+    const safeSDK = await Safe.create({
+      ethAdapter,
+      safeSelected
+    })
+
+    let maxFeePerGas = ethers.BigNumber.from(40000000000) // fallback to 40 gwei
+    let maxPriorityFeePerGas = ethers.BigNumber.from(40000000000) // fallback to 40 gwei
+    try {
+        const { data } = await axios({
+            method: 'get',
+            url: 'https://gasstation-mainnet.matic.network/v2'
+        })
+        maxFeePerGas = ethers.utils.parseUnits(
+            Math.ceil(data.fast.maxFee) + '',
+            'gwei'
+        )
+        maxPriorityFeePerGas = ethers.utils.parseUnits(
+            Math.ceil(data.fast.maxPriorityFee) + '',
+            'gwei'
+        )
+    } catch {
+        // ignore
+    }
+
+    const safeTransaction = await safeService.getTransaction(safeTxHash);
+    const executeTxResponse = await safeSDK.executeTransaction(safeTransaction, {
+      maxFeePerGas,
+      maxPriorityFeePerGas
+    });
+    const receipt = await executeTxResponse.transactionResponse?.wait()
+    
+    console.log('Transaction executed:')
+    console.log(`https://goerli.etherscan.io/tx/${receipt.transactionHash}`)
+  }
+
 
   // fetch safe address balance with polling
   const fetchSafeBalance = useCallback(async () => {
@@ -235,16 +407,18 @@ const AccountAbstractionProvider = ({ children }) => {
 
     loginWeb3Auth,
     logoutWeb3Auth,
+    deploySafe,
 
     setChainId,
 
     safeSelected,
     safeBalance,
     setSafeSelected,
+    safeDeployed,
 
-    isRelayerLoading,
-    relayTransaction,
-    gelatoTaskId
+    createTransaction,
+    signAndConfirmTransaction,
+    executeTransaction,
   }
 
   return (
@@ -252,6 +426,36 @@ const AccountAbstractionProvider = ({ children }) => {
       {children}
     </accountAbstractionContext.Provider>
   )
+}
+
+const EIP712_SAFE_TX_TYPE = {
+  // "SafeTx(address to,uint256 value,bytes data,uint8 operation,uint256 safeTxGas,uint256 baseGas,uint256 gasPrice,address gasToken,address refundReceiver,uint256 nonce)"
+  SafeTx: [
+      { type: "address", name: "to" },
+      { type: "uint256", name: "value" },
+      { type: "bytes", name: "data" },
+      { type: "uint8", name: "operation" },
+      { type: "uint256", name: "safeTxGas" },
+      { type: "uint256", name: "baseGas" },
+      { type: "uint256", name: "gasPrice" },
+      { type: "address", name: "gasToken" },
+      { type: "address", name: "refundReceiver" },
+      { type: "uint256", name: "nonce" },
+  ]
+}
+
+const buildSafeTransaction = (template) => {
+  return {
+      to: template.to,
+      value: template.value || 0,
+      data: template.data || "0x",
+      operation: template.operation || 0,
+      safeTxGas: template.safeTxGas || 0,
+      baseGas: template.baseGas || 0,
+      gasPrice: template.gasPrice || 0,
+      gasToken: template.gasToken || ethers.constants.AddressZero,
+      refundReceiver: template.refundReceiver || ethers.constants.AddressZero,
+  }
 }
 
 export { useAccountAbstraction, AccountAbstractionProvider }

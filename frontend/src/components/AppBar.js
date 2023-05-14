@@ -3,9 +3,9 @@ import { AppBar, Button, Toolbar, Typography } from "@mui/material";
 import { useTheme } from '@mui/material/styles';
 import React from "react";
 import { useApp } from "../contexts/AppContext";
+import { ReactComponent as Logo } from '../images/Bot.svg';
 import { useAccountAbstraction } from "../store/accountAbstractionContext";
 import { APP_NAME } from "../utils/constants";
-import { ReactComponent as Logo } from '../images/Bot.svg';
 
 const useStyles = makeStyles((theme) => ({
   appBar: {
@@ -27,19 +27,29 @@ const useStyles = makeStyles((theme) => ({
   },
   userInfo: {
     color: "black",
+    marginRight: "1rem",
   }
 }));
 
 export default function AppBarApp() {
   const theme = useTheme();
   const { currentAccount, setCurrentAccount } = useApp();
-  const { loginWeb3Auth, isAuthenticated, ownerAddress } = useAccountAbstraction()
+  const { loginWeb3Auth, logoutWeb3Auth, deploySafe, isAuthenticated, ownerAddress, safeDeployed, safeSelected, safeBalance } = useAccountAbstraction()
 
   const classes = useStyles();
 
-  const connectWallet = async () => {
-    loginWeb3Auth();
+  const connectWallet = () => {
+    loginWeb3Auth(); 
   };
+
+  const deploySafeHandler = () => {
+    deploySafe();
+  }
+
+  const logoutHandler = () => {
+    logoutWeb3Auth();
+  }
+
 
   return (
     <AppBar className={classes.appBar} position="fixed">
@@ -62,7 +72,12 @@ export default function AppBarApp() {
           style={{ "background": !currentAccount && 'linear-gradient(to right top, #7B1EA2, #695be5)'}}
         >
           Connect Wallet
-        </Button> : <div className={classes.userInfo}>{ownerAddress.slice(0,5) + "..." + ownerAddress.slice(ownerAddress.length-3, ownerAddress.length)}</div>}
+        </Button> : <div className={classes.userInfo}><b>Personal address</b> {ownerAddress.slice(0,5) + "..." + ownerAddress.slice(ownerAddress.length-3, ownerAddress.length)}</div>}
+        {isAuthenticated && !safeDeployed && <Button onClick={deploySafeHandler}>Deploy a safe</Button>}
+        <br />
+        {isAuthenticated && safeDeployed && <div className={classes.userInfo}><b>Safe address</b> {safeSelected.slice(0,5) + "..." + safeSelected.slice(safeSelected.length-3, safeSelected.length)}</div>}
+        {isAuthenticated && safeDeployed && <div className={classes.userInfo}><b>Safe balance</b> {safeBalance} ETH</div>}
+        {isAuthenticated && <Button onClick={logoutHandler}>Logout</Button>}
       </Toolbar>
     </AppBar>
   );
