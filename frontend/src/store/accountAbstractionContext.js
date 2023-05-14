@@ -8,7 +8,6 @@ import { OpenloginAdapter } from '@web3auth/openlogin-adapter'
 import axios from 'axios'
 import { ethers } from 'ethers'
 import { createContext, useCallback, useContext, useEffect, useState } from 'react'
-import SwapperAbi from '../abis/Swapper.json'
 import usePolling from '../hooks/usePolling'
 import { initialChain } from '../utils/chains'
 import getChain from '../utils/getChain'
@@ -240,23 +239,22 @@ const AccountAbstractionProvider = ({ children }) => {
   }
 
   const createTransaction = async (amountInWei, tokenOut, receiver) => {
-    const iface = new ethers.utils.Interface(SwapperAbi);
+    const functionSignature = 'function swapETHForTokens(address a, address b)';
 
-    const encodedData = iface.encodeFunctionData("swapETHForTokens", [tokenOut, receiver]);
-
-    // Generate data hash
-    const dataHash = ethers.utils.keccak256(encodedData);
-
-    // const safeTransactionData = buildSafeTransaction({
-    //   to: ethers.utils.getAddress(SWAPPER_ADDRESS),
-    //   data: dataHash,
-    //   value: amountInWei,
-    // });
+    let ABI = [functionSignature];
+    let iface = new ethers.utils.Interface(ABI);
+    const transactionData2 = iface.encodeFunctionData("swapETHForTokens", [ tokenOut, receiver ])
+    console.log(transactionData2);
     
+    // get the nounce of the safe using ethers and safe address
+    const nonce = await getNonce(safeSelected, web3Provider);
+
+    console.log(nonce);
     const safeTransactionData = buildSafeTransaction({
       to: ethers.utils.getAddress(SWAPPER_ADDRESS),
-      data: dataHash,
+      data: transactionData2,
       value: amountInWei,
+      nonce: nonce,
     });
 
     const signer = web3Provider.getSigner();
@@ -267,7 +265,7 @@ const AccountAbstractionProvider = ({ children }) => {
     const safeSDK = await Safe.create({
       ethAdapter,
       safeSelected,
-      chainId: chainId
+      chainId: chainId,
     })
     
     let maxFeePerGas = ethers.BigNumber.from(40000000000) // fallback to 40 gwei
@@ -328,15 +326,15 @@ const AccountAbstractionProvider = ({ children }) => {
       senderSignature: senderSignature.data,
     })
 
-    const pendingTransactions = await safeService.getPendingTransactions(safeSelected)
-    console.log(pendingTransactions)
+    const pendingTransactions = await safeService.getPendingTransactions(safeSelected);
+    console.log(pendingTransactions);
 
     await safeService.confirmTransaction(safeTxHash, senderSignature.data);
   }
 
   const executeTransaction = async (tx) => {
     const safeTxHash = ethers.utils._TypedDataEncoder.hash({ 
-      chainId: 137,
+      chainId: chainId,
       verifyingContract: ethers.utils.getAddress(safeSelected), 
     }, EIP712_SAFE_TX_TYPE, tx.data)
     
@@ -375,9 +373,15 @@ const AccountAbstractionProvider = ({ children }) => {
     }
 
     const safeTransaction = await safeService.getTransaction(safeTxHash);
+    console.log(safeTransaction);
+    console.log(safeTxHash);
+    
+    const executorNonce = await getNonce(protocolWallet.getAddress(), web3Provider);
+    console.log(executorNonce);
     const executeTxResponse = await safeSDK.executeTransaction(safeTransaction, {
       maxFeePerGas,
-      maxPriorityFeePerGas
+      maxPriorityFeePerGas,
+      nonce: executorNonce
     });
     const receipt = await executeTxResponse.transactionResponse?.wait()
     
@@ -455,7 +459,18 @@ const buildSafeTransaction = (template) => {
       gasPrice: template.gasPrice || 0,
       gasToken: template.gasToken || ethers.constants.AddressZero,
       refundReceiver: template.refundReceiver || ethers.constants.AddressZero,
+      nonce: template.nonce || 0,
   }
+}
+
+async function getNonce(contractAddress, provider) {
+  if (contractAddress !== 0) {
+    console.log("ADDY", contractAddress);
+    let nonce = await provider.getTransactionCount(contractAddress);
+    console.log(`The nonce for address ${contractAddress} is ${nonce}`);
+    return nonce;
+  }
+  return 0;
 }
 
 export { useAccountAbstraction, AccountAbstractionProvider }

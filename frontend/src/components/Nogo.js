@@ -1,5 +1,6 @@
 import { makeStyles } from "@material-ui/styles";
 import { Button, Container } from "@mui/material";
+import { ethers } from "ethers";
 import { React, useState } from "react";
 import { useAccountAbstraction } from "../store/accountAbstractionContext";
 
@@ -16,7 +17,7 @@ export default function Nogo() {
   const [transaction, setTransaction] = useState(null);
 
   const createTransactionHandler = async () => {
-    const tx = await createTransaction(5, "0x2791bca1f2de4661ed88a30c99a7a9449aa84174", "0x461E2B57776d269544E8FFd397EFE1ce6eFBA969");
+    const tx = await createTransaction(ethers.utils.parseEther("1").toString(), "0x5fe2B58c013d7601147DcdD68C143A77499f5531", "0x8C28d9e60E05BcDCf7A4d2FeA259aBb4Bc4Ee51f");
     setTransaction(tx);
   }
 

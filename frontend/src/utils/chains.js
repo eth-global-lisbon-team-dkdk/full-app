@@ -10,9 +10,6 @@ export const polygonChain = {
   isStripePaymentsEnabled: false
 }
 
-
-
-
 const chains = [polygonChain]
 
 export const initialChain = polygonChain
