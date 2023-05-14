@@ -1,6 +1,6 @@
 import React from "react";
-import safeLogo from '../../images/safe.png'; // Tell Webpack this JS file uses this image
-import polygonLogo from '../../images/polygon.png'; // Tell Webpack this JS file uses this image
+import safeLogo from '../../images/safe.png';
+import polygonLogo from '../../images/polygon.png';
 
 export default function Footer() {
 

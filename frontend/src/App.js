@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import AppBarApp from "./components/AppBar";
 import Chat from "./components/Chat";
 import "./index.css";
@@ -7,6 +7,7 @@ import { Box } from "@mui/material";
 import { useApp } from "./contexts/AppContext";
 import { AccountAbstractionProvider } from "./store/accountAbstractionContext";
 import { postQuestion } from "./api/backend";
+import LandingComponent from "./components/LandingPage/LandingComponent";
 
 const dummy_messages = [
   { who: "system", isAction: false, links: [], template: [], text: "👋 gm, this is CryptoWise" },
@@ -21,10 +22,16 @@ const initial_suggestions = [
 ];
 
 function App() {
+  const [scrolled, setScrolled] = useState(false);
   const [messages, setMessages] = useState(dummy_messages);
   const [suggestions, setSuggestions] = useState(initial_suggestions);
   const [disabled, setDisabled] = useState(false);
-  const { scrollToBottom } = useApp();
+
+  useEffect(() => {
+      window.addEventListener('scroll', handleScroll);
+  }, []);
+
+  const handleScroll = () => setScrolled(true);
 
   const onNewMessage = async (message) => {
     setDisabled(true);
@@ -50,8 +57,9 @@ function App() {
     <AccountAbstractionProvider>
       <Box sx={{height: "100%"}}>
         <AppBarApp />
+        <LandingComponent />
         <Chat messages={messages} onFinishedWriting={updateSuggestions} />
-        <Input onNewMessage={onNewMessage} disabled={disabled} suggestions={suggestions} makeRequest={makeRequest} />
+        <Input onNewMessage={onNewMessage} scrolled={scrolled} disabled={disabled} suggestions={suggestions} makeRequest={makeRequest} />
       </Box>
     </AccountAbstractionProvider>
   );

@@ -5,7 +5,7 @@ const data = {"message":"<<LLM Chat Response to question: what is Ethereum? \n W
 
 export async function postQuestion(question) {
 
-  return await axios.post("https://zeazy--llm-api-llm-app.modal.run/query", {
+  return await axios.post("https://zeazy--llm-api-v2-llm-app.modal.run/query", {
     query: question
   }, {
     headers: {

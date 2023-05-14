@@ -4,6 +4,7 @@ import { Box, Container, TextField } from "@mui/material";
 import { makeStyles } from "@material-ui/styles";
 import SuggestionsContainer from "./SuggestionsContainer";
 import Footer from "../Footer/Footer";
+import EnterAppBottomContainer from "../LandingPage/EnterAppBottomContainer";
 
 const useStyles = makeStyles((theme) => ({
   inputContainer: {
@@ -14,7 +15,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function Input({ onNewMessage, suggestions, disabled }) {
+export default function Input({ scrolled, onNewMessage, suggestions, disabled }) {
   const [inputValue, setInputValue] = useState('');
   const classes = useStyles();
 
@@ -35,6 +36,7 @@ export default function Input({ onNewMessage, suggestions, disabled }) {
 
   return (
     <Box className={classes.inputContainer} >
+      {scrolled ?
       <Container style={{ alignItems: "center", maxWidth: "45%"}}>
           {suggestions.length !== 0 && <SuggestionsContainer suggestions={suggestions} disabled={disabled} addUserInput={addUserInput}/>}
           <Box boxShadow={3} borderRadius={4} className={classes.textField} style={{ margin: suggestions.length !== 0 ? '0 0 1rem 0' : '1rem 0 1rem 0' }}>
@@ -66,7 +68,9 @@ export default function Input({ onNewMessage, suggestions, disabled }) {
               }}
             />
           </Box>
-      </Container>
+      </Container> : 
+      <EnterAppBottomContainer />
+      }
       <Footer />
     </Box>
   );

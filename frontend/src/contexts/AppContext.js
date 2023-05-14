@@ -10,10 +10,6 @@ export function AppProvider({ children }) {
   const [currentAccount, setCurrentAccount] = useState(null);
   const messagesEndRef = useRef(null);
 
-  useEffect(() => {
-    scrollToBottom();
-  }, []);
-
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }
