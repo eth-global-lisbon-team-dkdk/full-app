@@ -7,6 +7,7 @@ import { Box } from "@mui/material";
 import { AccountAbstractionProvider, useAccountAbstraction } from "./store/accountAbstractionContext";
 import { postQuestion } from "./api/backend";
 import LandingComponent from "./components/LandingPage/LandingComponent";
+import { useApp } from "./contexts/AppContext";
 
 const dummy_messages = [
   { who: "system", isAction: false, links: [], template: [], text: "👋 gm, this is CryptoWise" },
@@ -15,9 +16,9 @@ const dummy_messages = [
 ];
 
 const initial_suggestions = [
-  'What is Web3?',
-  'What is Ethereum?',
-  'Is crypto safe?',
+  'What is web3?',
+  'What are popular cryptocurrencies?',
+  'Set up a DCA trade',
 ];
 
 function App() {
@@ -28,6 +29,7 @@ function App() {
   const [suggestions, setSuggestions] = useState(initial_suggestions);
   const [disabled, setDisabled] = useState(false);
   const { safeSelected } = useAccountAbstraction();
+  const { scrollToBottom } = useApp();
 
   useEffect(() => {
       window.addEventListener('scroll', handleScroll);
@@ -35,20 +37,27 @@ function App() {
 
   const handleScroll = () => setScrolled(true);
 
+  const addNewMessageToList = (message) => {
+    setMessages((messages) => [...messages, message]);
+  }
+
   const onNewMessage = async (message) => {
     setDisabled(true);
-    setMessages((messages) => [...messages, message]);
+    addNewMessageToList(message);
+    scrollToBottom();
     setSuggestions([]);
     await makeRequest(message.text);
   };
 
   const updateSuggestions = () => {
     setDisabled(false);
+    scrollToBottom();
   }
   
   const makeRequest = async (input) => {
     console.log("Making request", input);
     const response = await postQuestion(input);
+    setDisabled(false);
     console.log("Response", response);
 
     if (response.is_action) {
@@ -56,9 +65,14 @@ function App() {
       const tx = createTransaction(response.amount_matic, response.address, safeSelected);
       setTransaction(tx);
       setDisabled(false);
+      scrollToBottom();
     } else {
       setMessages((messages) => [...messages, { text: response.message, who: "system", isAction: response.is_action, links: response.links, template: response.template }]);
       setSuggestions([...response.template]);
+      setTimeout(function(){
+        scrollToBottom();
+      }, 1000);
+      
     }
   }
   
@@ -67,7 +81,7 @@ function App() {
       <Box sx={{height: "100%"}}>
         <AppBarApp />
         <LandingComponent />
-        <Chat onNewMessage={onNewMessage} transaction={transaction} messages={messages} onFinishedWriting={updateSuggestions} />
+        <Chat onNewMessage={onNewMessage} addNewMessageToList={addNewMessageToList} transaction={transaction} messages={messages} onFinishedWriting={updateSuggestions} />
         <Input onNewMessage={onNewMessage} scrolled={scrolled} disabled={disabled} suggestions={suggestions} makeRequest={makeRequest} />
       </Box>
     </AccountAbstractionProvider>

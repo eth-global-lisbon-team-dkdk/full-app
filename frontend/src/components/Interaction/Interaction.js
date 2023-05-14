@@ -15,7 +15,7 @@ const useStyles = makeStyles((theme) => ({
 
 export default function Interaction(props) {
   const classes = useStyles();
-  const [visibleLinks, setVisibleLinks] = useState(!props.last && props.message && props.message.links && props.message.links.length > 0 ? true : false);
+  const [visibleLinks, setVisibleLinks] = useState(props.message && props.message.links && props.message.links.length > 0 ? true : false);
   const { scrollToBottom } = useApp();
 
   const showLinks = () => {
@@ -50,8 +50,6 @@ export default function Interaction(props) {
         >
           { !props.message.isAction ?
             (
-              props.left && props.last && !visibleLinks && !props.default ?
-              <TextAnimation text={props.message.text} onFinishedWriting={showLinks} /> :
               <Typography variant="body2" textAlign={props.left ? "left" : "right"}>{props.message.text}</Typography>
             ) :
             <>
@@ -82,7 +80,7 @@ export default function Interaction(props) {
                       display: "block",
                     }}
                   >
-                    {link}
+                    {link.slice(0, 60) + "..."}
                   </Button>)}
                 </>
               </Container>
@@ -90,7 +88,7 @@ export default function Interaction(props) {
           }
           {
             props.left && props.message.isAction &&
-            <FullWidthButtons onNewMessage={props.onNewMessage} transaction={props.transaction} />
+            <FullWidthButtons addNewMessageToList={props.addNewMessageToList} onNewMessage={props.onNewMessage} transaction={props.transaction} />
           }
         </Paper>}
       </div>

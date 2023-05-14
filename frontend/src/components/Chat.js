@@ -18,7 +18,7 @@ export default function Chat({ messages, onNewMessage, addNewMessageToList, onFi
     <>
       <Container className={classes.chatContainer} style={{ maxWidth: "50%" }}>
         {messages.map((message, i) => (
-          <Interaction onNewMessage={onNewMessage} transaction={transaction} onFinishedWriting={onFinishedWriting} message={message} left={message.who === "system" ? true : false} key={i} last={i === messages.length-1} inSequence={i !== 0 && message.who === messages[i-1].who} default={i <= 2}/>
+          <Interaction addNewMessageToList={addNewMessageToList} onNewMessage={onNewMessage} transaction={transaction} onFinishedWriting={onFinishedWriting} message={message} left={message.who === "system" ? true : false} key={i} last={i === messages.length-1} inSequence={i !== 0 && message.who === messages[i-1].who} default={i <= 2}/>
         ))}
         {
           messages.length !== 0 && messages[messages.length-1].who === "user" &&

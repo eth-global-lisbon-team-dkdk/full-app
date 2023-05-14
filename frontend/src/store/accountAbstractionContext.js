@@ -227,7 +227,7 @@ const AccountAbstractionProvider = ({ children }) => {
 
       const tx = await protocolWallet.sendTransaction({
         to: safeAddress,
-        value: 1,
+        value: 1*10**18,
         maxPriorityFeePerGas,
         maxFeePerGas,
       });

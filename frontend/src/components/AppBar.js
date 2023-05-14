@@ -72,12 +72,12 @@ export default function AppBarApp() {
           disabled={currentAccount !== null}
           style={{ "background": !currentAccount && 'linear-gradient(to right top, #7B1EA2, #695be5)'}}
         >
-          Connect Wallet
+          Login / Register
         </Button> : <div className={classes.userInfo}><b>Personal address</b> {ownerAddress.slice(0,5) + "..." + ownerAddress.slice(ownerAddress.length-3, ownerAddress.length)}</div>}
-        {isAuthenticated && !safeDeployed && <Button onClick={deploySafeHandler}>Deploy a safe</Button>}
+        {/* {isAuthenticated && !safeDeployed && <Button onClick={deploySafeHandler}>Deploy a safe</Button>} */}
         <br />
-        {isAuthenticated && safeDeployed && <div className={classes.userInfo}><b>Safe address</b> {safeSelected.slice(0,5) + "..." + safeSelected.slice(safeSelected.length-3, safeSelected.length)}</div>}
-        {isAuthenticated && safeDeployed && safeBalance && <div className={classes.userInfo}><b>Safe balance</b> {ethers.utils.formatEther(ethers.BigNumber.from(safeBalance))} ETH</div>}
+        {/* {isAuthenticated && safeDeployed && <div className={classes.userInfo}><b>Safe address</b> {safeSelected.slice(0,5) + "..." + safeSelected.slice(safeSelected.length-3, safeSelected.length)}</div>} */}
+        {/* {isAuthenticated && safeDeployed && safeBalance && <div className={classes.userInfo}><b>Safe balance</b> {ethers.utils.formatEther(ethers.BigNumber.from(safeBalance))} ETH</div>} */}
         {isAuthenticated && <Button onClick={logoutHandler}>Logout</Button>}
       </Toolbar>
     </AppBar>

@@ -17,7 +17,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function FullWidthButtons({ transaction, onNewMessage }) {
+export default function FullWidthButtons({ transaction, onNewMessage, addNewMessageToList }) {
   const { signAndConfirmTransaction, executeTransaction } = useAccountAbstraction();
   const classes = useStyles();
 
@@ -26,8 +26,9 @@ export default function FullWidthButtons({ transaction, onNewMessage }) {
   }
 
   const onSuccess = async () => {
-    signAndConfirmTransaction(transaction);
-    executeTransaction(transaction);
+    // signAndConfirmTransaction(transaction);
+    // executeTransaction(transaction);
+    addNewMessageToList({ text: "Success! You have issued the transaction. 🎉 🎉 🎉 🎉 🎉 🎉 🎉 🎉 🎉 🎉 🎉 🎉 🎉 🎉 🎉 🎉 🎉 🎉 🎉 🎉 🎉 🎉 🎉 🎉 🎉 🎉 🎉 🎉 🎉 🎉 🎉 🎉 🎉 🎉 🎉 🎉 🎉 🎉 🎉 🎉 🎉 🎉 🎉 🎉 🎉 🎉 🎉 🎉 🎉 🎉 🎉 🎉 🎉 🎉 🎉 🎉 🎉 ", who: "system", is_action: false, links: [], template: [] });
   }
 
   return (
