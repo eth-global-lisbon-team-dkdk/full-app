@@ -1,8 +1,11 @@
-# README - CryptoWise
+# README - CryptoWise.AI
 
 ## Introduction
 
-Welcome to CryptoWise, our submission for the EthGlobal Lisbon Crypto Hackathon! In this README, we will provide an overview of the technologies we have used and how we have utilized them to develop our project. This information will help the judges assess our performance and understand the unique features of our solution.
+Welcome to CryptoWise, our submission for the ETHGlobal Lisbon 2023 Hackathon! In this README, we will provide an overview of the technologies we have used and how we have utilized them to develop our project. CryptoWise.AI was awarded with bounty prizes from both Polygon and The Graph.
+
+![overview](https://github.com/eth-global-lisbon-team-dkdk/full-app/assets/2742107/3f034891-e11b-4006-a6c4-7c1959f94027)
+
 
 ## Project Overview
 
